@@ -7,7 +7,6 @@ This package aims to provide the functionality to download large files from the 
 
 ```
 import time
-<<<<<<< HEAD
 from pyDownload import Downloader
 
 url = 'https://github.com/party98/Python-Parallel-Downloader/archive/master.zip'
