@@ -14,7 +14,7 @@ except ImportError:
     from urlparse import urlparse
 
 
-class PyDownloader:
+class Downloader:
     @property
     def file_name(self):
         return self.filename
@@ -160,4 +160,4 @@ if __name__ == "__main__":
     filename = "a.txt"
     threads = 10
     url = "https://raw.githubusercontent.com/ambv/black/master/.flake8"
-    d = PyDownloader(url, filename="ads")
+    d = Downloader(url, filename="ads")
