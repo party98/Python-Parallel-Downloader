@@ -19,13 +19,25 @@ class Downloader:
     def file_name(self):
         return self.filename
 
+    @file_name.setter
+    def file_name(self,filename):
+        self.filename=filename
+
     @property
     def bytes_downloaded(self):
         return self._bytes_downloaded
 
+    @bytes_downloaded.setter
+    def bytes_downloaded(self,bytes_downloaded):
+        self.bytes_downloaded=bytes_downloaded
+
     @property
     def download_size(self):
         return self._download_size
+
+    @download_size.setter
+    def download_size(self,download_size):
+        self.download_size=download_size
 
     @property
     def thread_num(self):
@@ -34,6 +46,8 @@ class Downloader:
     @property
     def is_running(self):
         return self._running
+
+
 
     def start_download(self, wait_for_download=True):
         self._wait_for_download = wait_for_download
@@ -46,10 +60,38 @@ class Downloader:
     def download_url(self):
         return self.url
 
+    @download_url.setter
+    def download_url(self,url):
+        self.url=url
+
     @thread_num.setter
     def thread_num(self, thread_count):
         if self._running is False:
             self._thread_num = thread_count
+
+    @property
+    def chunk_size(self):
+        return self.chunk_size
+
+    @chunk_size.setter
+    def chunk_size(self,chunk_size):
+        self.chunk_size=chunk_size
+
+    @property
+    def auto_start(self):
+        return self.auto_start
+
+    @auto_start.setter
+    def auto_start(self,auto_start):
+        self.auto_start=auto_start
+
+    @property
+    def wait_for_download(self):
+        return self.wait_for_download
+
+    @wait_for_download.setter
+    def wait_for_download(self,wait_for_download):
+        self.wait_for_download=wait_for_download
 
     def _download_spliter(self):
         last = 0

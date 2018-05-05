@@ -18,6 +18,7 @@ pip install pydownload
 
 ```python
 import time
+<<<<<<< HEAD
 from pyDownload import Downloader
 
 url = 'https://github.com/party98/Python-Parallel-Downloader/archive/master.zip'
