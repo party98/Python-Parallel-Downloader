@@ -39,9 +39,9 @@ setup(
         'test': ['nose', 'coverage'],
     },
     entry_points={  # Optional
-        # 'console_scripts': [
-        #     'sample=sample:main',
-        # ],
+        'console_scripts': [
+            'pyDownload = pyDownload.__main__:main',
+        ],
     },
     project_urls={  # Optional
         'Bug Reports': 'https://github.com/party98/Python-Parallel-Downloader/issues',
