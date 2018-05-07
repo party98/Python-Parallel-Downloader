@@ -1,4 +1,3 @@
-import sys
 from argparse import ArgumentParser
 
 
@@ -15,7 +14,7 @@ def main():
                    help='chunk size (in bytes)', type=int, dest='chunk_size')
     a.add_argument('--single-multithreaded', action='store_true',
                    help='use multithreading to download file.', dest='multithreaded')
-    args = a.parse_args(sys.argv[1:])
+    args = a.parse_args()
     print(args)
 
 
