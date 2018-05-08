@@ -1,5 +1,7 @@
 from argparse import ArgumentParser
 
+import pkg_resources
+
 import progressbar
 
 from . import Downloader
@@ -39,8 +41,10 @@ def main():
                    help='chunk size (in bytes)', type=int, dest='chunk_size', default=1024)
     a.add_argument('--single-multithreaded', action='store_true',
                    help='use multithreading to download file.', dest='multithreaded')
-    a.add_argument('--version', action='store_true',
-                   help='display the version of pyDownload being used', dest='version')
+    a.add_argument('--version', action='version',
+                   help='display the version of pyDownload being used',
+                   version='%(prog)s {version}'
+                   .format(version=pkg_resources.require('pyDownload')[0].version))
     args = a.parse_args()
     initiate_download(args)
 
