@@ -64,9 +64,8 @@ class testPropChange(unittest.TestCase):
         self.assertFalse(download.is_running)
         self.assertEqual(download.bytes_downloaded, 0)
         download.start_download(wait_for_download=False)
-        time.sleep(0.5)
         while download.is_running:
-            self.assertNotEqual(download.bytes_downloaded, 0)
+            time.sleep(0.5)
         self.assertFalse(download.is_running)
         self.assertEqual(download.bytes_downloaded, download.download_size)
         os.remove(download.file_name)

@@ -164,14 +164,16 @@ class Downloader(object):
         else:
             header = {}
         with requests.get(url=self._url, stream=True, headers=header) as r:
-            with open("%s.temp" % filename, "wb+") as f:
-                f.seek(range_start)
+            with open("%s.temp" % filename, "rb+") as f:
+                pos = range_start
                 i = 0
                 for chunk in r.raw.stream(amt=self._chunk_size):
                     i += 1
                     if chunk:
+                        f.seek(pos)
                         f.write(chunk)
                         self._bytes_downloaded += len(chunk)
+                        pos += len(chunk)
         self._intermediate_files.append("%s-%s.part" % (filename, thread_id))
 
     def merge_downloads(self):
@@ -194,8 +196,9 @@ class Downloader(object):
 
     def download_manager(self):
         self._running = True
-        create_file(self._get_filename()+'.temp', self._download_size)
         self.running_threads = []
+        # Create file so that we are able to open it in r+ mode
+        create_file(self._get_filename()+".temp")
         if self._is_multithreaded is True:
             for thread_num, down_range in zip(range(10), self._range_iterator):
                 t = threading.Thread(
