@@ -6,6 +6,8 @@ def int_or_none(n):
         return int(n)
     except TypeError:
         return None
+    except ValueError:
+        return None
 
 
 def make_head_req(url):
