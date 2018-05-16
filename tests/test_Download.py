@@ -47,3 +47,10 @@ class testDownload(unittest.TestCase):
         download.thread_num = 4
         self.assertEqual(download.thread_num, 4)
         self.assertEqual(len(download._range_list), 4)
+
+    def test_auto_start_download(self):
+        download = Downloader(url=self.TEST_URL_1)
+        self.assertFalse(download.is_running)
+        self.assertEqual(download.file_name, '1Mio.dat')
+        self.assertEqual(download.download_size, 1048576)
+        self.assertTrue(os.path.exists('1Mio.dat'))
