@@ -79,7 +79,6 @@ class testPropChange(unittest.TestCase):
         download.multithreaded = False
         self.assertTrue(download.is_running)
         self.assertTrue(download.multithreaded)
-        download.wait_for_download = True
         self.assertFalse(download.wait_for_download)
         while download.is_running:
             time.sleep(0.5)
