@@ -9,6 +9,8 @@ import pyDownload
 class testPropChange(unittest.TestCase):
     TEST_URL_1 = 'http://ovh.net/files/1Mio.dat'
     TEST_URL_2 = 'http://ovh.net/files/1Mb.dat'
+    TEST_URL_3 = 'https://sales2.geico.com/internetsales/dwr/call/plaincall/\
+    PresentationRulesFacade.execute.dwr'
 
     @classmethod
     def setUpClass(cls):
@@ -31,6 +33,25 @@ class testPropChange(unittest.TestCase):
         self.assertNotEqual(init_size, downloader.download_size)
         self.assertNotEqual(init_filename, downloader.file_name)
         self.assertNotEqual(init_range_list, downloader._range_list)
+        self.assertNotEqual(init_url, downloader.download_url)
+
+    def test_url_change_2(self):
+        downloader = pyDownload.Downloader(
+            url=self.TEST_URL_3, auto_start=False)
+        self.assertFalse(downloader._is_multithreaded)
+        downloader.download_url = self.TEST_URL_1
+        self.assertTrue(downloader._is_multithreaded)
+
+    def test_url_change_3(self):
+        downloader = pyDownload.Downloader(
+            url=self.TEST_URL_1, auto_start=False)
+        init_url = downloader.download_url
+        init_filename = downloader.file_name
+        self.assertTrue(downloader._is_multithreaded)
+        downloader.download_url = self.TEST_URL_3
+        self.assertIsNone(downloader.download_size)
+        self.assertNotEqual(init_filename, downloader.file_name)
+        self.assertFalse(downloader._is_multithreaded)
         self.assertNotEqual(init_url, downloader.download_url)
 
     def test_thread_num_changes(self):
