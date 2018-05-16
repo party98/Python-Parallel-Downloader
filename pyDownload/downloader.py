@@ -176,14 +176,6 @@ class Downloader(object):
                         pos += len(chunk)
         self._intermediate_files.append("%s-%s.part" % (filename, thread_id))
 
-    def merge_downloads(self):
-        filename = self._get_filename()
-        with open(filename + ".temp", "wb+") as f:
-            for part_file in sorted(self._intermediate_files):
-                with open(part_file, "rb") as r:
-                    f.write(r.read())
-                os.remove(part_file)
-
     def uncompress_if_gzip(self):
         filename = self._get_filename()
         if self.is_gzip:
@@ -212,7 +204,6 @@ class Downloader(object):
                 thread.join()
         else:
             self._download_thread(thread_id=0)
-        # self.merge_downloads()
         self.uncompress_if_gzip()
         self._running = False
 
