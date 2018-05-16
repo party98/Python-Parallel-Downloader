@@ -4,8 +4,6 @@ import requests
 def int_or_none(n):
     try:
         return int(n)
-    except TypeError:
-        return None
     except ValueError:
         return None
 
