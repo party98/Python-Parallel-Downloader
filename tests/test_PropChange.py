@@ -104,3 +104,9 @@ class testPropChange(unittest.TestCase):
         while download.is_running:
             time.sleep(0.5)
         os.remove(download.file_name)
+
+    def test_splitter(self):
+        downloader = pyDownload.Downloader(
+            url=self.TEST_URL_1, auto_start=False, wait_for_download=False, multithreaded=True)
+        downloader.thread_num = downloader.download_size*10
+        self.assertEqual(downloader.thread_num, downloader.download_size)
