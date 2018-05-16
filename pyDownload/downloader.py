@@ -57,11 +57,6 @@ class Downloader(object):
     def wait_for_download(self):
         return self._wait_for_download
 
-    @wait_for_download.setter
-    def wait_for_download(self, value):
-        if self._running is False:
-            self._wait_for_download = value
-
     @property
     def multithreaded(self):
         return self._is_multithreaded
