@@ -54,6 +54,15 @@ class testPropChange(unittest.TestCase):
         self.assertFalse(downloader._is_multithreaded)
         self.assertNotEqual(init_url, downloader.download_url)
 
+    def test_url_change_4(self):
+        downloader = pyDownload.Downloader(
+            url=self.TEST_URL_3, wait_for_download=False)
+        self.assertTrue(downloader.is_running)
+        downloader.download_url = self.TEST_URL_1
+        self.assertNotEqual(downloader.download_url, self.TEST_URL_1)
+        while downloader.is_running:
+            time.sleep(1)
+
     def test_thread_num_changes(self):
         download = pyDownload.Downloader(url=self.TEST_URL_1, auto_start=False)
         self.assertFalse(download.is_running)
@@ -64,6 +73,11 @@ class testPropChange(unittest.TestCase):
         download.thread_num = 4
         self.assertEqual(download.thread_num, 4)
         self.assertEqual(len(download._range_list), 4)
+        download.start_download(wait_for_download=False)
+        download.thread_num = 10
+        self.assertNotEqual(download.thread_num, 10)
+        while download.is_running:
+            time.sleep(0.5)
 
     def test_filename_changes_1(self):
         download = pyDownload.Downloader(url=self.TEST_URL_1, auto_start=False)
@@ -91,6 +105,11 @@ class testPropChange(unittest.TestCase):
         self.assertEqual(download.chunk_size, 1024)
         download.chunk_size = 2048
         self.assertEqual(download.chunk_size, 2048)
+        download.start_download(wait_for_download=False)
+        download.chunk_size = 1024
+        self.assertNotEqual(download.chunk_size, 1024)
+        while download.is_running:
+            time.sleep(0.5)
 
     def test_bytes_downloaded_change(self):
         download = pyDownload.Downloader(
@@ -114,7 +133,10 @@ class testPropChange(unittest.TestCase):
 
     def test_misc_changes(self):
         download = pyDownload.Downloader(
-            url=self.TEST_URL_1, auto_start=False, wait_for_download=False, multithreaded=True)
+            url=self.TEST_URL_1, auto_start=False, wait_for_download=False, multithreaded=False)
+
+        self.assertFalse(download.multithreaded)
+        download.multithreaded = True
         self.assertTrue(download.multithreaded)
         self.assertFalse(download.wait_for_download)
         download.start_download(wait_for_download=False)

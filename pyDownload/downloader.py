@@ -65,6 +65,11 @@ class Downloader(object):
     def multithreaded(self, value):
         if self._running is False:
             self._is_multithreaded = value
+            if self._is_multithreaded:
+                self._range_iterator = self._download_spliter()
+                self._range_iterator, self._range_list = itertools.tee(
+                    self._range_iterator)
+                self._range_list = list(self._range_list)
 
     @property
     def file_name(self):
