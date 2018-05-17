@@ -1,3 +1,4 @@
+import sys
 from argparse import ArgumentParser
 
 import pkg_resources
@@ -27,7 +28,7 @@ def initiate_download(args):
     bar.finish('\nFile saved at %s\n' % download.file_name)
 
 
-def main():
+def generate_arg_parser():
     a = ArgumentParser(prog='pyDownload',
                        description='A pure python tool to download files from the internet using\
                         parallel threads.',
@@ -42,8 +43,13 @@ def main():
                    help='display the version of pyDownload being used',
                    version='%(prog)s {version}'
                    .format(version=pkg_resources.require('pyDownload')[0].version))
-    args = a.parse_args()
-    initiate_download(args)
+    return a
+
+
+def main(args=sys.argv[1:]):
+    arg_parser = generate_arg_parser()
+    arguments = arg_parser.parse_args(args)
+    initiate_download(arguments)
 
 
 if __name__ == '__main__':
