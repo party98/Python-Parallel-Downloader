@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 import unittest
 
 from pyDownload import Downloader
@@ -48,8 +49,19 @@ class testDownload(unittest.TestCase):
         self.assertEqual(download.thread_num, 4)
         self.assertEqual(len(download._range_list), 4)
 
-    def test_auto_start_download(self):
+    def test_auto_start_download_1(self):
         download = Downloader(url=self.TEST_URL_1)
+        self.assertFalse(download.is_running)
+        self.assertEqual(download.file_name, '1Mio.dat')
+        self.assertEqual(download.download_size, 1048576)
+        self.assertTrue(os.path.exists('1Mio.dat'))
+
+    def test_auto_start_download_2(self):
+        download = Downloader(url=self.TEST_URL_1, wait_for_download=False)
+        time.sleep(1)
+        self.assertTrue(download.is_running)
+        while(download.is_running):
+            time.sleep(1)
         self.assertFalse(download.is_running)
         self.assertEqual(download.file_name, '1Mio.dat')
         self.assertEqual(download.download_size, 1048576)

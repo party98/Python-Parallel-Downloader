@@ -22,7 +22,7 @@ class testPropChange(unittest.TestCase):
         os.chdir('..')
         shutil.rmtree('temp')
 
-    def test_url_change(self):
+    def test_url_change_1(self):
         downloader = pyDownload.Downloader(
             url=self.TEST_URL_1, auto_start=False)
         init_url = downloader.download_url
@@ -65,12 +65,25 @@ class testPropChange(unittest.TestCase):
         self.assertEqual(download.thread_num, 4)
         self.assertEqual(len(download._range_list), 4)
 
-    def test_filename_changes(self):
+    def test_filename_changes_1(self):
         download = pyDownload.Downloader(url=self.TEST_URL_1, auto_start=False)
         self.assertFalse(download.is_running)
         self.assertEqual(download.file_name, '1Mio.dat')
         download.file_name = 'abc.dat'
         self.assertEqual(download.file_name, 'abc.dat')
+
+    def test_filename_changes_2(self):
+        download = pyDownload.Downloader(url=self.TEST_URL_1, auto_start=False)
+        self.assertFalse(download.is_running)
+        self.assertEqual(download.file_name, '1Mio.dat')
+        download.start_download(wait_for_download=False)
+        self.assertTrue(download.is_running)
+        download.file_name = 'abc.dat'
+        self.assertNotEqual(download.file_name, 'abc.dat')
+        # wait for the download to finish otherwise the cleanup process deletes
+        # the file raising error in all the threads
+        while download.is_running:
+            time.sleep(1)
 
     def test_chunk_size_changes(self):
         download = pyDownload.Downloader(url=self.TEST_URL_1, auto_start=False)
@@ -90,6 +103,14 @@ class testPropChange(unittest.TestCase):
         self.assertFalse(download.is_running)
         self.assertEqual(download.bytes_downloaded, download.download_size)
         os.remove(download.file_name)
+
+    def test_start(self):
+        download = pyDownload.Downloader(
+            url=self.TEST_URL_1, wait_for_download=False)
+        self.assertTrue(download.is_running)
+        download.start_download()
+        while download.is_running:
+            time.sleep(1)
 
     def test_misc_changes(self):
         download = pyDownload.Downloader(
