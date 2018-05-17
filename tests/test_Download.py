@@ -58,7 +58,7 @@ class testDownload(unittest.TestCase):
 
     def test_auto_start_download_2(self):
         download = Downloader(url=self.TEST_URL_1, wait_for_download=False)
-        time.sleep(1)
+
         self.assertTrue(download.is_running)
         while(download.is_running):
             time.sleep(1)
