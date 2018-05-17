@@ -146,7 +146,20 @@ class testPropChange(unittest.TestCase):
         self.assertFalse(download.wait_for_download)
         while download.is_running:
             time.sleep(0.5)
-        os.remove(download.file_name)
+
+    def test_multithreading_change(self):
+        download = pyDownload.Downloader(
+            url=self.TEST_URL_1, auto_start=False, wait_for_download=False, multithreaded=True)
+        self.assertTrue(download.multithreaded)
+        download.multithreaded = False
+        self.assertFalse(download.multithreaded)
+        download.start_download(wait_for_download=False)
+        download.multithreaded = True
+        self.assertTrue(download.is_running)
+        self.assertFalse(download.multithreaded)
+        self.assertFalse(download.wait_for_download)
+        while download.is_running:
+            time.sleep(0.5)
 
     def test_splitter(self):
         downloader = pyDownload.Downloader(
