@@ -1,27 +1,27 @@
 language: python
 cache: pip
 python:
-  - "2.6"
-  - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.5-dev"  # 3.5 development branch
-  - "3.6"
-  - "3.6-dev"  # 3.6 development branch
-  - "3.7-dev"  # 3.7 development branch
-  - "pypy2.7"
-  - "pypy3.5"
+- '2.6'
+- '2.7'
+- '3.3'
+- '3.4'
+- '3.5'
+- 3.5-dev
+- '3.6'
+- 3.6-dev
+- 3.7-dev
+- pypy2.7
+- pypy3.5
 sudo: false
 install:
-  - pip install .[test] codecov
+- pip install .[test] codecov
 matrix:
-    fast_finish: true
-    allow_failures:
-        - python: "2.6"
-        - python: "2.7"
-        - python: "pypy2.7"
-        - python: "pypy3.5"
+  fast_finish: true
+  allow_failures:
+  - python: '2.6'
+  - python: '2.7'
+  - python: pypy2.7
+  - python: pypy3.5
 script:
-  - nosetests --cover-erase --cover-package=pyDownload  --cover-branches --with-coverage
-  - codecov
+- nosetests --cover-erase --cover-package=pyDownload  --cover-branches --with-coverage
+- codecov
