@@ -68,7 +68,7 @@ class testDownload(unittest.TestCase):
         self.assertTrue(os.path.exists('1Mio.dat'))
 
     def test_Download_pause_and_resume(self):
-        download = Downloader(url=self.TEST_URL, auto_start=False)
+        download = Downloader(url=self.TEST_URL_1, auto_start=False)
         self.assertFalse(download.is_running)
         download.pause()
         self.assertFalse(download._paused)
