@@ -4,6 +4,8 @@ import os
 import shutil
 import threading
 import time
+from itertools import chain
+from queue import Queue
 from urllib.parse import urlparse
 
 import requests
@@ -21,7 +23,8 @@ class Downloader(object):
         chunk_size=1024,
         auto_start=True,
         multithreaded=True,
-        wait_for_download=True
+        wait_for_download=True,
+        num_splits=10
     ):
         self._status = DownloadStatus.INITIALIZING
         self._paused = False
@@ -29,6 +32,7 @@ class Downloader(object):
         self._is_multithreaded = multithreaded
         self._intermediate_files = []
         self._bytes_downloaded = 0
+        self._num_splits = num_splits
         download_meta_data = make_head_req(url)
         self._url = download_meta_data.url
         download_headers = download_meta_data.headers
@@ -38,12 +42,11 @@ class Downloader(object):
         if self._download_size is None:
             self._is_multithreaded = False
         self._filename = filename
-        self._thread_num = threads
-        if self._is_multithreaded:
-            self._range_iterator = self._download_spliter()
-            self._range_iterator, self._range_list = itertools.tee(
-                self._range_iterator)
-            self._range_list = list(self._range_list)
+        self._thread_num = 1 if self._download_size is None else threads
+        self._range_iterator = self._download_spliter()
+        self._range_iterator, self._range_list = itertools.tee(
+            self._range_iterator)
+        self._range_list = list(self._range_list)
         self._chunk_size = chunk_size
         self._manager = threading.Thread(target=self.download_manager)
         self._wait_for_download = wait_for_download
@@ -62,19 +65,19 @@ class Downloader(object):
     def wait_for_download(self):
         return self._wait_for_download
 
-    @property
-    def multithreaded(self):
-        return self._is_multithreaded
-
-    @multithreaded.setter
-    def multithreaded(self, value):
-        if self._running is False:
-            self._is_multithreaded = value
-            if self._is_multithreaded:
-                self._range_iterator = self._download_spliter()
-                self._range_iterator, self._range_list = itertools.tee(
-                    self._range_iterator)
-                self._range_list = list(self._range_list)
+    # @property
+    # def multithreaded(self):
+    #     return self._is_multithreaded
+    #
+    # @multithreaded.setter
+    # def multithreaded(self, value):
+    #     if self._running is False:
+    #         self._is_multithreaded = value
+    #         if self._is_multithreaded:
+    #             self._range_iterator = self._download_spliter()
+    #             self._range_iterator, self._range_list = itertools.tee(
+    #                 self._range_iterator)
+    #             self._range_list = list(self._range_list)
 
     @property
     def file_name(self):
@@ -86,17 +89,26 @@ class Downloader(object):
             self._filename = filename
 
     @property
-    def thread_num(self):
-        return self._thread_num
+    def num_splits(self):
+        return self._num_splits
 
-    @thread_num.setter
-    def thread_num(self, thread_count):
+    @num_splits.setter
+    def num_splits(self, num_splits):
         if self._running is False:
-            self._thread_num = thread_count
+            self._num_splits = 1 if self._download_size is None else num_splits
             self._range_iterator = self._download_spliter()
             self._range_iterator, self._range_list = itertools.tee(
                 self._range_iterator)
             self._range_list = list(self._range_list)
+
+    @property
+    def thread_num(self):
+        return self._thread_num
+
+    @thread_num.setter
+    def thread_num(self, thread_num):
+        if self._running is False:
+            self._thread_num = 1 if self._download_size is None else thread_num
 
     @property
     def chunk_size(self):
@@ -121,14 +133,12 @@ class Downloader(object):
                 download_headers.get("Content-Length"))
             self.is_gzip = download_headers.get("Content-Encoding") == "gzip"
             if self._download_size is None:
-                self._is_multithreaded = False
-            else:
-                self._is_multithreaded = True
-            if self._is_multithreaded:
-                self._range_iterator = self._download_spliter()
-                self._range_iterator, self._range_list = itertools.tee(
-                    self._range_iterator)
-                self._range_list = list(self._range_list)
+                self._thread_num = 1
+                self._num_splits = 1
+            self._range_iterator = self._download_spliter()
+            self._range_iterator, self._range_list = itertools.tee(
+                self._range_iterator)
+            self._range_list = list(self._range_list)
 
     @property
     def bytes_downloaded(self):
@@ -169,32 +179,41 @@ class Downloader(object):
 
     def _download_spliter(self):
         last = 0
-        if self._download_size < self._thread_num:
-            self._thread_num = self._download_size
-        for i in range(self._thread_num):
-            split_size = (self._download_size - last) // (self._thread_num - i)
-            yield (last, int(last + split_size) - 1)
-            last = last + split_size
+        if self._download_size is None:
+            yield (None, None)
+        else:
+            if self._download_size < self._num_splits:
+                self._num_splits = self._download_size
+            for i in range(self._num_splits):
+                num_splits = (self._download_size -
+                              last) // (self._num_splits - i)
+                yield (last, int(last + num_splits) - 1)
+                last = last + num_splits
 
     def _download_thread(self, range_start=0, range_end=None):
-        filename = self._get_filename()
-        if range_start is not None and range_end is not None:
-            header = {"Range": "bytes=%s-%s" % (range_start, range_end)}
-        else:
-            header = {}
-        with requests.get(url=self._url, stream=True, headers=header) as r:
-            with open("%s.temp" % filename, "rb+") as f:
-                pos = range_start
-                i = 0
-                for chunk in r.raw.stream(amt=self._chunk_size):
-                    i += 1
-                    while self._paused:
-                        time.sleep(1)
-                    if chunk:
-                        f.seek(pos)
-                        f.write(chunk)
-                        self._bytes_downloaded += len(chunk)
-                        pos += len(chunk)
+        while True:
+            data = self._queue.get()
+            if data == 'STOP':
+                return
+            range_start, range_end = data
+            filename = self._get_filename()
+            if range_start is not None and range_end is not None:
+                header = {"Range": "bytes=%s-%s" % (range_start, range_end)}
+            else:
+                header = {}
+            with requests.get(url=self._url, stream=True, headers=header) as r:
+                with open("%s.temp" % filename, "rb+") as f:
+                    pos = range_start or 0
+                    i = 0
+                    for chunk in r.raw.stream(amt=self._chunk_size):
+                        i += 1
+                        while self._paused:
+                            time.sleep(1)
+                        if chunk:
+                            f.seek(pos)
+                            f.write(chunk)
+                            self._bytes_downloaded += len(chunk)
+                            pos += len(chunk)
 
     def uncompress_if_gzip(self):
         filename = self._get_filename()
@@ -212,19 +231,22 @@ class Downloader(object):
         # Create file so that we are able to open it in r+ mode
         create_file(self._get_filename()+".temp")
         self._status = DownloadStatus.RUNNING
-        if self._is_multithreaded is True:
-            for thread_num, down_range in zip(range(10), self._range_iterator):
-                t = threading.Thread(
-                    target=self._download_thread, args=(
-                        down_range[0], down_range[1])
-                )
-                self.running_threads.append(t)
-                t.start()
+        # if self._is_multithreaded is True:
+        self._queue = Queue()
+        for i in chain(self._range_iterator, ['STOP']*self._thread_num):
+            self._queue.put(i)
 
-            for thread in self.running_threads:
-                thread.join()
-        else:
-            self._download_thread()
+        for t in range(self._thread_num):
+            t = threading.Thread(
+                target=self._download_thread,
+            )
+            self.running_threads.append(t)
+            t.start()
+
+        for thread in self.running_threads:
+            thread.join()
+        # else:
+        #     self._download_thread()
         self.uncompress_if_gzip()
         self._running = False
         self._status = DownloadStatus.FINISHED

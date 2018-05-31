@@ -38,15 +38,15 @@ class testDownload(unittest.TestCase):
         download.start_download()
         self.assertTrue(os.path.exists('README.md'))
 
-    def test_ThreadNumChanges(self):
+    def test_NumSplitChanges(self):
         download = Downloader(url=self.TEST_URL_1, auto_start=False)
         self.assertFalse(download.is_running)
         self.assertEqual(download.file_name, '1Mio.dat')
         self.assertEqual(download.download_size, 1048576)
-        self.assertEqual(download.thread_num, 10)
+        self.assertEqual(download.num_splits, 10)
         self.assertEqual(len(download._range_list), 10)
-        download.thread_num = 4
-        self.assertEqual(download.thread_num, 4)
+        download.num_splits = 4
+        self.assertEqual(download.num_splits, 4)
         self.assertEqual(len(download._range_list), 4)
 
     def test_auto_start_download_1(self):
