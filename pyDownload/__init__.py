@@ -1,1 +1,1 @@
-from .downloader import Downloader  # noqa: F401
+from .downloader_factory import DownloaderFactory as Downloader  # noqa: F401

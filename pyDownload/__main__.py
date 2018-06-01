@@ -5,7 +5,7 @@ import pkg_resources
 
 import progressbar
 
-from . import Downloader
+from . import ThreadDownloader
 
 
 def initializee_progress_bar(max_value):
@@ -19,8 +19,8 @@ def initializee_progress_bar(max_value):
 
 
 def initiate_download(args):
-    download = Downloader(url=args.url[0], chunk_size=args.chunk_size, threads=args.num_threads,
-                          filename=args.filename, auto_start=False, wait_for_download=False)
+    download = ThreadDownloader(url=args.url[0], chunk_size=args.chunk_size, workers=args.num_threads,
+                                filename=args.filename, auto_start=False, wait_for_download=False)
     bar = initializee_progress_bar(download.download_size)
     download.start_download(wait_for_download=False)
     while download.is_running:

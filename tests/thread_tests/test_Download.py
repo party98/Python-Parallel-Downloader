@@ -4,7 +4,7 @@ import time
 import unittest
 
 from pyDownload import Downloader
-from utils import md5
+from tests.utils import md5
 
 
 class testDownload(unittest.TestCase):
@@ -20,7 +20,8 @@ class testDownload(unittest.TestCase):
         shutil.rmtree('temp')
 
     def test_Download_without_gzip(self):
-        download = Downloader(url=self.TEST_URL_1, auto_start=False)
+        download = Downloader(url=self.TEST_URL_1,
+                              auto_start=False, multithreaded=True)
         self.assertFalse(download.is_running)
         self.assertFalse(download.is_gzip)
         self.assertEqual(download.file_name, '1Mio.dat')
@@ -31,7 +32,8 @@ class testDownload(unittest.TestCase):
         self.assertEqual(md5('1Mio.dat'), '6cb91af4ed4c60c11613b75cd1fc6116')
 
     def test_Download_with_gzip(self):
-        download = Downloader(url=self.TEST_URL_2, auto_start=False)
+        download = Downloader(url=self.TEST_URL_2,
+                              auto_start=False, multithreaded=True)
         self.assertFalse(download.is_running)
         self.assertTrue(download.is_gzip)
         self.assertEqual(download.file_name, 'README.md')
@@ -39,7 +41,8 @@ class testDownload(unittest.TestCase):
         self.assertTrue(os.path.exists('README.md'))
 
     def test_NumSplitChanges(self):
-        download = Downloader(url=self.TEST_URL_1, auto_start=False)
+        download = Downloader(url=self.TEST_URL_1,
+                              auto_start=False, multithreaded=True)
         self.assertFalse(download.is_running)
         self.assertEqual(download.file_name, '1Mio.dat')
         self.assertEqual(download.download_size, 1048576)
@@ -57,10 +60,10 @@ class testDownload(unittest.TestCase):
         self.assertTrue(os.path.exists('1Mio.dat'))
 
     def test_auto_start_download_2(self):
-        download = Downloader(url=self.TEST_URL_1, wait_for_download=False)
-
+        download = Downloader(url=self.TEST_URL_1,
+                              wait_for_download=False, multithreaded=True)
         self.assertTrue(download.is_running)
-        while(download.is_running):
+        while download.is_running:
             time.sleep(1)
         self.assertFalse(download.is_running)
         self.assertEqual(download.file_name, '1Mio.dat')
@@ -68,21 +71,22 @@ class testDownload(unittest.TestCase):
         self.assertTrue(os.path.exists('1Mio.dat'))
 
     def test_Download_pause_and_resume(self):
-        download = Downloader(url=self.TEST_URL_1, auto_start=False)
+        download = Downloader(url=self.TEST_URL_1,
+                              auto_start=False, multithreaded=True)
         self.assertFalse(download.is_running)
         download.pause()
-        self.assertFalse(download._paused)
+        self.assertFalse(download.is_paused)
         download.resume()
-        self.assertFalse(download._paused)
+        self.assertFalse(download.is_paused)
         self.assertEqual(download.file_name, '1Mio.dat')
         self.assertEqual(download.download_size, 1048576)
         download.start_download(wait_for_download=False)
         self.assertTrue(download.is_running)
         download.pause()
         time.sleep(0.2)
-        self.assertTrue(download._paused)
+        self.assertTrue(download.is_paused)
         download.resume()
-        self.assertFalse(download._paused)
+        self.assertFalse(download.is_paused)
         while download.is_running:
             time.sleep(1)
         self.assertTrue(os.path.exists('1Mio.dat'))
