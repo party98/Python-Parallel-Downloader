@@ -1,6 +1,6 @@
 # PyDownload [![PyPI version](https://badge.fury.io/py/pyDownload.svg)](https://badge.fury.io/py/pyDownload) [![Build Status](https://travis-ci.org/party98/pyDownload.svg?branch=master)](https://travis-ci.org/party98/pyDownload) [![codecov](https://codecov.io/gh/party98/pyDownload/branch/master/graph/badge.svg)](https://codecov.io/gh/party98/pyDownload)
 
-This package aims to provide the functionality to download large files from the internet using chunked and multithreaded downloads.
+This package aims to provide the functionality to download large files from the internet using chunked and multithreaded/multiprocessed downloads.
 
 # Index
  - [Command Line Usage](#command-line-usage)
@@ -14,7 +14,7 @@ This package aims to provide the functionality to download large files from the 
 
 # Command Line usage
 
-The package can be used to perform multithreaded downloads via the CLI.
+The package can be used to perform fast downloads via the CLI.
 
 ### Usage
 
@@ -29,6 +29,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  -m, --multithreading  switch between multithreading and multiprocessing
   -o FILENAME, --output FILENAME
                         output file
   -t NUM_THREADS, --threads NUM_THREADS
