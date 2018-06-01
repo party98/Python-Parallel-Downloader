@@ -3,14 +3,25 @@ import itertools
 import os
 import shutil
 import threading
-from abc import ABC, abstractclassmethod, abstractmethod
+from abc import abstractclassmethod, abstractmethod
 from urllib.parse import urlparse
 
 from .status import DownloadStatus
 from .utils import create_file, int_or_none, make_head_req
 
+try:
+    from abc import ABC
+except ImportError:
+    ABC = object
+
 
 class BaseDownloader(ABC):
+    try:
+        from abc import ABC
+    except ImportError:
+        from abc import ABCMeta
+        __metaclass__ = ABCMeta
+
     def __init__(self, url, filename=None, workers=4, num_splits=10, chunk_size=1024 * 1024 * 1, wait_for_download=True,
                  auto_start=True):
         self.running_workers = []
