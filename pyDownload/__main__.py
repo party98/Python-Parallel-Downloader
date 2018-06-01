@@ -5,7 +5,7 @@ import pkg_resources
 
 import progressbar
 
-from . import ThreadDownloader
+from . import Downloader
 
 
 def initializee_progress_bar(max_value):
@@ -19,8 +19,9 @@ def initializee_progress_bar(max_value):
 
 
 def initiate_download(args):
-    download = ThreadDownloader(url=args.url[0], chunk_size=args.chunk_size, workers=args.num_threads,
-                                filename=args.filename, auto_start=False, wait_for_download=False)
+    download = Downloader(url=args.url[0], chunk_size=args.chunk_size, workers=args.num_threads,
+                          filename=args.filename, auto_start=False, wait_for_download=False,
+                          multithreaded=args.multithreaded)
     bar = initializee_progress_bar(download.download_size)
     download.start_download(wait_for_download=False)
     while download.is_running:
@@ -34,6 +35,8 @@ def generate_arg_parser():
                         parallel threads.',
                        usage='pyDownload [--option value] url')
     a.add_argument('url', nargs='+', help='list of urls to download')
+    a.add_argument('-m', '--multithreading', dest='multithreaded',
+                   action='store_true', help='switch between multithreading and multiprocessing')
     a.add_argument('-o', '--output', help='output file', dest='filename')
     a.add_argument('-t', '--threads', help='number of threads to use',
                    type=int, dest='num_threads', default=4)
