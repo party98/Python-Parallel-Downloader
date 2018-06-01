@@ -3,7 +3,7 @@ import itertools
 import os
 import shutil
 import threading
-# import time
+import time
 from itertools import chain
 from multiprocessing import Lock, Process, Queue, Value
 from urllib.parse import urlparse
@@ -27,7 +27,7 @@ class Downloader(object):
         num_splits=10
     ):
         self._status = DownloadStatus.INITIALIZING
-        self._paused = False
+        self._paused = Value('i', 0)
         self._running = False
         self._is_multithreaded = multithreaded
         self._intermediate_files = []
@@ -154,13 +154,13 @@ class Downloader(object):
 
     def pause(self):
         if self._running:
-            self._paused = True
+            self._paused.value = int(True)
             DownloadStatus.PAUSED
 
     def resume(self):
-        if self._running and self._paused:
+        if self._running and bool(self._paused.Value):
             print('Resuming')
-            self._paused = False
+            self._paused = int(False)
             DownloadStatus.RUNNING
 
     def start_download(self, wait_for_download=True):
@@ -191,7 +191,7 @@ class Downloader(object):
                 last = last + num_splits
 
     @staticmethod
-    def _download_thread(queue, bytes_downloaded, lock):
+    def _download_thread(queue, bytes_downloaded, lock, is_pause):
         while True:
             data = queue.get()
             url, filename, chunk_size, range_start, range_end = data
@@ -207,8 +207,8 @@ class Downloader(object):
                     i = 0
                     for chunk in r.raw.stream(amt=chunk_size):
                         i += 1
-                        # while self._paused:
-                        #     time.sleep(1)
+                        while bool(is_pause.value):
+                            time.sleep(1)
                         if chunk:
                             f.seek(pos)
                             f.write(chunk)
@@ -233,7 +233,6 @@ class Downloader(object):
         # Create file so that we are able to open it in r+ mode
         create_file(self._get_filename()+".temp")
         self._status = DownloadStatus.RUNNING
-        # if self._is_multithreaded is True:
         self._queue = Queue()
         lock = Lock()
         for i in chain(self._range_iterator, [('STOP', '')]*self._thread_num):
@@ -243,21 +242,13 @@ class Downloader(object):
         for p in range(self._thread_num):
             p = Process(
                 target=self._download_thread,
-                args=(self._queue, self._bytes_downloaded, lock)
+                args=(self._queue, self._bytes_downloaded, lock, self._paused)
             )
             self.running_processes.append(p)
             p.start()
 
         for process in self.running_processes:
             process.join()
-        # else:
-        #     self._download_thread()
         self.uncompress_if_gzip()
         self._running = False
         self._status = DownloadStatus.FINISHED
-
-# if __name__ == "__main__":
-#     filename = "a.txt"
-#     threads = 10
-#     url = "https://raw.githubusercontent.com/ambv/black/master/.flake8"
-#     d = Downloader(url, filename="ads")
